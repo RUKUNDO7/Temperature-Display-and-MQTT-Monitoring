@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Monitoring Dashboard</title>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f4f4f4;
+        }
+
+        .card {
+            width: 400px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #temperature {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        #status {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .connected {
+            color: green;
+        }
+
+        .disconnected {
+            color: red;
+        }
+
+        #time {
+            margin-top: 15px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Temperature Monitoring Dashboard</h1>
+
+    <h3>Broker: 157.173.101.159</h3>
+    <h3>Topic: spe/temperature</h3>
+
+    <div id="temperature">-- °C</div>
+
+    <div id="status" class="disconnected">
+        Disconnected
+    </div>
+
+    <div id="time">
+        Waiting for data...
+    </div>
+</div>
+
+<script>
+
+    const brokerUrl = "ws://157.173.101.159:9001";
+
+    const options = {
+        clientId: "dashboard_" + Math.random().toString(16).substr(2, 8),
+        clean: true,
+        connectTimeout: 4000
+    };
+
+    const client = mqtt.connect(brokerUrl, options);
+
+    const tempElement = document.getElementById("temperature");
+    const statusElement = document.getElementById("status");
+    const timeElement = document.getElementById("time");
+
+    client.on("connect", () => {
+
+        console.log("Connected");
+
+        statusElement.innerHTML = "Connected";
+        statusElement.className = "connected";
+
+        client.subscribe("spe/temperature", (err) => {
+            if (!err) {
+                console.log("Subscribed to spe/temperature");
+            }
+        });
+    });
+
+    client.on("message", (topic, message) => {
+
+        const temp = message.toString();
+
+        tempElement.innerHTML = temp + " °C";
+
+        timeElement.innerHTML =
+            "Last Update: " +
+            new Date().toLocaleString();
+    });
+
+    client.on("error", (err) => {
+
+        console.error(err);
+
+        statusElement.innerHTML = "Connection Error";
+        statusElement.className = "disconnected";
+    });
+
+    client.on("close", () => {
+
+        statusElement.innerHTML = "Disconnected";
+        statusElement.className = "disconnected";
+    });
+
+</script>
+
+</body>
+</html>
+
