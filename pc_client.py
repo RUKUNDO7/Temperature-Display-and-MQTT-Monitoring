@@ -5,9 +5,9 @@ import paho.mqtt.client as mqtt
 ser = serial.Serial('COM6', 9600)
 
 # MQTT Broker
-BROKER = "192.168.1.100"   # VPS IP
+BROKER = "157.173.101.159"   # VPS IP
 PORT = 1883
-TOPIC = "temperature/data"
+TOPIC = "spe/temperature"
 
 client = mqtt.Client()
 client.connect(BROKER, PORT, 60)
